@@ -58,6 +58,7 @@ class Qmaze(object):
         nrows, ncols = self._maze.shape
         self.target = (nrows-1, ncols-1)   # target cell where the "cheese" is
         self.free_cells = [(r,c) for r in range(nrows) for c in range(ncols) if self._maze[r,c] == 1.0]
+        self.enemy_cells = [(r,c) for r in range(nrows) for c in range(ncols) if self._maze[r,c] == 2.0]
         self.free_cells.remove(self.target)
         if self._maze[self.target] == 0.0:
             raise Exception("Invalid maze: target cell cannot be blocked!")
@@ -170,14 +171,14 @@ class Qmaze(object):
         elif col == ncols-1:
             actions.remove(2)
 
-        if row>0 and self.maze[row-1,col] == 0.0:
+        if row>0 and (self.maze[row-1,col] == 0.0 or self.maze[row-1,col] == 2.0):
             actions.remove(1)
-        if row<nrows-1 and self.maze[row+1,col] == 0.0:
+        if row<nrows-1 and (self.maze[row+1,col] == 0.0 or self.maze[row+1,col] == 2.0):
             actions.remove(3)
 
-        if col>0 and self.maze[row,col-1] == 0.0:
+        if col>0 and (self.maze[row,col-1] == 0.0 or self.maze[row,col-1] == 2.0):
             actions.remove(0)
-        if col<ncols-1 and self.maze[row,col+1] == 0.0:
+        if col<ncols-1 and (self.maze[row,col+1] == 0.0 or self.maze[row,col+1] == 2.0):
             actions.remove(2)
 
         return actions
@@ -192,36 +193,15 @@ def show(qmaze):
     ax.set_yticklabels([])
     canvas = np.copy(qmaze.maze)
     for row,col in qmaze.visited:
-        canvas[row,col] = 0.6
+        canvas[row,col] = 0.65
+
+    for row,col in qmaze.enemy_cells:
+        canvas[row,col] = 0.4
     rat_row, rat_col, _ = qmaze.state
-    canvas[rat_row, rat_col] = 0.3   # rat cell
+    canvas[rat_row, rat_col] = 0.6   # rat cell
     canvas[nrows-1, ncols-1] = 0.9 # cheese cell
-    img = plt.imshow(canvas, interpolation='none', cmap='gray')
+    img = plt.imshow(canvas, interpolation='none', cmap='hot')
     return img
-
-# maze = [
-#     [ 1.,  0.,  1.,  1.,  1.,  1.,  1.,  1.],
-#     [ 1.,  0.,  1.,  1.,  1.,  0.,  1.,  1.],
-#     [ 1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.],
-#     [ 1.,  1.,  1.,  0.,  1.,  1.,  1.,  1.],
-#     [ 1.,  1.,  0.,  1.,  1.,  1.,  1.,  1.],
-#     [ 1.,  1.,  1.,  0.,  1.,  0.,  0.,  0.],
-#     [ 1.,  1.,  1.,  0.,  1.,  1.,  1.,  1.],
-#     [ 1.,  1.,  1.,  1.,  0.,  1.,  1.,  1.]
-# ]
-
-# # random test function?
-# qmaze = Qmaze(maze)
-# canvas, reward, game_over = qmaze.act(DOWN)
-# print("reward=", reward)
-# show(qmaze)
-
-# qmaze.act(DOWN)  # move down
-# qmaze.act(RIGHT)  # move right
-# qmaze.act(RIGHT)  # move right
-# qmaze.act(RIGHT)  # move right
-# qmaze.act(UP)  # move up
-# show(qmaze)
 
 def play_game(model, qmaze, rat_cell):
     qmaze.reset(rat_cell)
@@ -364,6 +344,7 @@ def qtrain(model, maze, **opt):
         if len(win_history) > hsize:
             win_rate = sum(win_history[-hsize:]) / hsize
 
+        show(qmaze)
         dt = datetime.datetime.now() - start_time
         t = format_time(dt.total_seconds())
         template = "Epoch: {:03d}/{:d} | Loss: {:.4f} | Episodes: {:d} | Win count: {:d} | Win rate: {:.3f} | time: {}"
@@ -418,7 +399,7 @@ def solve():
     	[ 0.,  0.,  0.,  1.,  1.,  1.,  0.],
     	[ 1.,  1.,  1.,  1.,  0.,  0.,  1.],
     	[ 1.,  0.,  0.,  0.,  1.,  1.,  1.],
-    	[ 1.,  0.,  1.,  1.,  1.,  1.,  1.],
+    	[ 1.,  0.,  1.,  1.,  1.,  2.,  1.],
     	[ 1.,  1.,  1.,  0.,  1.,  1.,  1.]
 	])
 
