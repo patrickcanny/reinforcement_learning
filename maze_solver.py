@@ -411,7 +411,7 @@ def build_model(maze, lr=0.001):
     model.compile(optimizer='adam', loss='mse')
     return model
 
-if __name__ == "__main__":
+def solve():
 	maze =  np.array([
     	[ 1.,  0.,  1.,  1.,  1.,  1.,  1.],
     	[ 1.,  1.,  1.,  0.,  0.,  1.,  0.],
@@ -428,3 +428,20 @@ if __name__ == "__main__":
 	model = build_model(maze)
 	qtrain(model, maze, epochs=1000, max_memory=8*maze.size, data_size=32)
 
+
+if __name__ == "__main__":
+	maze =  np.array([
+    	[ 1.,  0.,  1.,  1.,  1.,  1.,  1.],
+    	[ 1.,  1.,  1.,  0.,  0.,  1.,  0.],
+    	[ 0.,  0.,  0.,  1.,  1.,  1.,  0.],
+    	[ 1.,  1.,  1.,  1.,  0.,  0.,  1.],
+    	[ 1.,  0.,  0.,  0.,  1.,  1.,  1.],
+    	[ 1.,  0.,  1.,  1.,  1.,  1.,  1.],
+    	[ 1.,  1.,  1.,  0.,  1.,  1.,  1.]
+	])
+
+	qmaze = Qmaze(maze)
+	show(qmaze)
+
+	model = build_model(maze)
+	qtrain(model, maze, epochs=1000, max_memory=8*maze.size, data_size=32)
